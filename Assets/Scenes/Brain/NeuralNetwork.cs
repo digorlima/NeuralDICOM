@@ -10,7 +10,7 @@ using Encog.Neural.Networks.Training.Propagation.Back;
 using Encog.Neural.Networks.Training.Propagation.Resilient;
 using TMPro;
 
-public class EncogTest : MonoBehaviour
+public class NeuralNetwork : MonoBehaviour
 {
     BasicNetwork basicNetwork;
     IMLDataSet dataPairs;
@@ -19,12 +19,10 @@ public class EncogTest : MonoBehaviour
     private int epoch = 0;
     double[][] x;
     double[][] y;
-    bool train = true;
-    
+    bool train = false;
+
     [Header("Objects")]
-    public GameObject buttons;
-    public TextMeshProUGUI resultText;
-    public TextMeshProUGUI idealText;
+    public GameObject images;
 
     [Header("Typology")] 
     public int inputLayer = 2;
@@ -33,7 +31,7 @@ public class EncogTest : MonoBehaviour
     public float minimumError;
     public float maximumEpoch;
 
-    void Start()
+    public void CreateNetwork()
     {
         double[][] x =
         {
@@ -50,6 +48,7 @@ public class EncogTest : MonoBehaviour
             new[]{1.0},
             new[]{0.0}
         };
+
         
         basicNetwork = new BasicNetwork();
         basicNetwork.AddLayer(new BasicLayer(inputLayer));
@@ -64,6 +63,10 @@ public class EncogTest : MonoBehaviour
         dataPairs = new BasicMLDataSet(x, y);
 
         backpropagation = new ResilientPropagation(basicNetwork, dataPairs, 0.4, 0.12);
+
+        train = true;
+        
+        FeedImages();
     }
 
     void Update()
@@ -82,20 +85,26 @@ public class EncogTest : MonoBehaviour
         {
             backpropagation.FinishTraining();
             train = false;
-            buttons.SetActive(true);
         }
     }
 
     public void GetResults(int value)
     {
-        resultText.gameObject.SetActive(true);
-        idealText.gameObject.SetActive(true);
+        //resultText.gameObject.SetActive(true);
+        //idealText.gameObject.SetActive(true);
 
         var pair = dataPairs[value];
 
         IMLData output = basicNetwork.Compute(pair.Input);
-        //Debug.Log(pair.Input[0] + @"," + pair.Input[1] + @", actual=" + output[0] + @",ideal=" + pair.Ideal[0]);
-        resultText.text = "Result: " + output[0];
-        idealText.text = "Ideal: " + pair.Ideal[0];
+        Debug.Log(pair.Input[0] + @", actual=" + output[0] + @",ideal=" + pair.Ideal[0]);
+        //resultText.text = "Result: " + output[0];
+        //idealText.text = "Ideal: " + pair.Ideal[0];
+    }
+
+    public void FeedImages(){
+        foreach (Transform child in images.transform)
+        {
+            
+        }
     }
 }

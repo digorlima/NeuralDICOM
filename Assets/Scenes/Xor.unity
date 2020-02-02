@@ -10963,6 +10963,11 @@ MonoBehaviour:
   buttons: {fileID: 1630704779}
   resultText: {fileID: 376350396}
   idealText: {fileID: 896311986}
+  inputLayer: 2
+  hiddenLayer: 040000000300000002000000
+  outputLayer: 1
+  minimumError: 0.0001
+  maximumEpoch: 3000
 --- !u!1 &2008077647
 GameObject:
   m_ObjectHideFlags: 0
