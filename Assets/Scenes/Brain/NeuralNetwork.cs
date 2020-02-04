@@ -9,6 +9,17 @@ using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Back;
 using Encog.Neural.Networks.Training.Propagation.Resilient;
 using TMPro;
+using System;
+using System.Drawing;
+using System.IO;
+using Encog.ML.Data;
+using Encog.ML.Data.Basic;
+using Encog.ML.Data.Image;
+using Encog.ML.Train.Strategy;
+using Encog.Neural.Networks;
+using Encog.Neural.Networks.Training.Propagation.Resilient;
+using Encog.Util.DownSample;
+using Encog.Util.Simple;
 
 public class NeuralNetwork : MonoBehaviour
 {
@@ -90,15 +101,10 @@ public class NeuralNetwork : MonoBehaviour
 
     public void GetResults(int value)
     {
-        //resultText.gameObject.SetActive(true);
-        //idealText.gameObject.SetActive(true);
-
         var pair = dataPairs[value];
 
         IMLData output = basicNetwork.Compute(pair.Input);
         Debug.Log(pair.Input[0] + @", actual=" + output[0] + @",ideal=" + pair.Ideal[0]);
-        //resultText.text = "Result: " + output[0];
-        //idealText.text = "Ideal: " + pair.Ideal[0];
     }
 
     public void FeedImages(){

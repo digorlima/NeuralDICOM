@@ -10,23 +10,21 @@ using TMPro;
 public class BrainType : MonoBehaviour
 {
     enum Types{Normal, Hemorragia, Coagulo};
-
-    public int actual = (int)Types.Normal;
-
+    public int identity = (int)Types.Normal;
     public TextMeshProUGUI label;
 
     public void Pass()
     {
-        if (actual == 2)
+        if (identity == 2)
         {
-            actual = 0;
+            identity = 0;
         }
         else
         {
-            actual++;
+            identity++;
         }
 
-        switch (actual)
+        switch (identity)
         {
             case (int)Types.Normal:
                 label.text = "Normal";
