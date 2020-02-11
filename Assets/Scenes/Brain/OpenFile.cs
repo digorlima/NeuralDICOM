@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
+using Boo.Lang;
 using UnityEngine;
 using UnityEditor;
 using Image = UnityEngine.UI.Image;
 using OpenCvSharp;
+using SFB;
 using UnityScript.Steps;
 using Rect = UnityEngine.Rect;
 
@@ -12,50 +15,57 @@ public class OpenFile : MonoBehaviour
     public GameObject grid;
     public GameObject preset;
 
-    public float highOffset;
-    public float lowOffset;
-    
-    public void Open() {
-        string path = EditorUtility.OpenFilePanel("Open a image", "", "png;*jpg;*jpeg;*");
-        string extension = "";
+//    public float highOffset;
+//    public float lowOffset;
 
-        Texture2D tex;
+    public static List<Texture2D> Open() {
+        //string path = EditorUtility.OpenFilePanel("Open a image", "", "png;*jpg;*jpeg;*");
+        List<Texture2D> textures = new List<Texture2D>();
         
-        var fileContent = File.ReadAllBytes(path);
+        ExtensionFilter[] extensions = new [] {
+            new ExtensionFilter("Image Files", "png", "jpg", "jpeg"),
+        };
+        
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open a image", "", extensions, true);
 
-        tex = new Texture2D(0, 0);
-        tex.LoadImage(fileContent);
+        foreach(string path in paths)
+        {
+            Texture2D texture;
+        
+            var fileContent = File.ReadAllBytes(path);
 
-        tex = Clean(tex);
-        tex.Apply();
+            texture = new Texture2D(0, 0);
+            texture.LoadImage(fileContent);
 
-        GameObject image = Instantiate(preset, grid.transform, false);
-        image.transform.GetChild(1).GetComponent<Image>().sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            texture = Clean(texture);
+            TextureScaler.scale(texture, 100, 100, 0);
+            texture.Apply();
+            
+            textures.Add(texture);
+        }
+
+        return textures;
     }
 
-    public Texture2D Clean(Texture2D texture)
+    public void PutInObject()
     {
-        //        Mat mat = new Mat(texture.height, texture.width, MatType.CV_8UC3, Scalar.Black);
-//        mat = Cv2.ImRead("C:/Users/danie/Documents/GitHub/NeuralDICOM/Assets/Scenes/Brain/lena.pgm");
-//                                       
-//                                               int erosion_size = 1;
-//                                               
-//                                               Mat element = Cv2.GetStructuringElement( 0,
-//                                                   new Size( 2*erosion_size + 1, 2*erosion_size+1 ),
-//                                                   new Point( erosion_size, erosion_size ) );
-//                                               
-//                                               Cv2.Erode(mat, mat, element);
-//        
-//        mat = TextureToMat(texture, mat);
-//        
-//        Cv2.ImShow("teste", mat);
-        texture = removeUselessPixels(texture, 0);
-        texture = removeBlacks(texture);
+        foreach (Texture2D texture in Open())
+        {
+            GameObject image = Instantiate(preset, grid.transform, false);
+            image.transform.GetChild(1).GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        }
+    }
+
+    public static Texture2D Clean(Texture2D texture)
+    {
+        texture = RemoveUselessPixels(texture, 0);
+        texture = Limiarize(texture);
+        //texture = removeBlacks(texture);
 
         return texture;
     }
 
-    public Texture2D removeUselessPixels(Texture2D texture, int offset)
+    public static Texture2D RemoveUselessPixels(Texture2D texture, int offset)
     {
         int startRow = 0;
         int startColumn = 0;
@@ -191,100 +201,24 @@ public class OpenFile : MonoBehaviour
         return newTexture;
     }
 
-    public Texture2D removeBlacks(Texture2D texture)
+    public static Texture2D Limiarize(Texture2D texture)
     {
         for (int row = 0; row < texture.height; row++)
         {
-            for (int column = 0; column < texture.width; column++)
+            for (int columns = 0; columns < texture.width; columns++)
             {
-                float average = 0;
-
-                for (int channel = 0; channel < 3; channel++)
+                if ((texture.GetPixel(columns, row)[0]) < 0.2f)
                 {
-                    average += texture.GetPixel(column, row)[channel];
+                    texture.SetPixel(columns, row, new Color(0, 0, 0));
                 }
-
-                average /= 3.0f;
-
-                if (average > lowOffset && average < highOffset)
+                else if (texture.GetPixel(columns, row)[0] < 0.6f &&
+                         texture.GetPixel(columns, row)[0] > 0.2f)
                 {
-                    break;
+                    texture.SetPixel(columns, row, new Color(0.5f, 0.5f, 0.5f));
                 }
                 else
                 {
-                    texture.SetPixel(column, row, new Color(0,0,0,0));
-                }
-            }
-        }
-
-        for (int row = 0; row < texture.height; row++)
-        {
-            for (int column = texture.width; column > 0; column--)
-            {
-                float average = 0;
-
-                for (int channel = 0; channel < 3; channel++)
-                {
-                    average += texture.GetPixel(column, row)[channel];
-                }
-
-                average /= 3.0f;
-
-                if (average > lowOffset && average < highOffset)
-                {
-                    break;
-                }
-                else
-                {
-                    texture.SetPixel(column, row, new Color(0,0,0,0));
-                }
-            }
-        }
-
-        for (int column = 0; column < texture.width; column++)
-        {
-            for (int row = 0; row < texture.height; row++)
-            {
-                float average = 0;
-
-                for (int channel = 0; channel < 3; channel++)
-                {
-                    average += texture.GetPixel(column, row)[channel];
-                }
-
-                average /= 3.0f;
-
-                if (average > lowOffset && average < highOffset)
-                {
-                    break;
-                }
-                else
-                {
-                    texture.SetPixel(column, row, new Color(0,0,0,0));
-                }
-            }
-        }
-
-        for (int column = 0; column < texture.width; column++)
-        {
-            for (int row = texture.height; row > 0; row--)
-            {
-                float average = 0;
-
-                for (int channel = 0; channel < 3; channel++)
-                {
-                    average += texture.GetPixel(column, row)[channel];
-                }
-
-                average /= 3.0f;
-
-                if (average > lowOffset && average < highOffset)
-                {
-                    break;
-                }
-                else
-                {
-                    texture.SetPixel(column, row, new Color(0,0,0,0));
+                    texture.SetPixel(columns, row, new Color(1, 1, 1));
                 }
             }
         }
@@ -292,20 +226,104 @@ public class OpenFile : MonoBehaviour
         return texture;
     }
     
-    /*unsafe public Mat TextureToMat(Texture2D texture, Mat mat)
-    {
-        for (int row = 0; row < mat.Rows; row++)
-        {
-            for (int column = 0; column < mat.Cols; column++)
-            {
-                for (int channels = 0; channels < mat.Channels(); channels++)
-                {
-                    var ptr = mat.Ptr(row, column) + channels;
-                    ptr = (IntPtr) 35;
-                }
-            }
-        }
-
-        return mat;
-    }*/
+//    public Texture2D removeBlacks(Texture2D texture)
+//    {
+//        for (int row = 0; row < texture.height; row++)
+//        {
+//            for (int column = 0; column < texture.width; column++)
+//            {
+//                float average = 0;
+//
+//                for (int channel = 0; channel < 3; channel++)
+//                {
+//                    average += texture.GetPixel(column, row)[channel];
+//                }
+//
+//                average /= 3.0f;
+//
+//                if (average > lowOffset && average < highOffset)
+//                {
+//                    break;
+//                }
+//                else
+//                {
+//                    texture.SetPixel(column, row, new Color(0,0,0,0));
+//                }
+//            }
+//        }
+//
+//        for (int row = 0; row < texture.height; row++)
+//        {
+//            for (int column = texture.width; column > 0; column--)
+//            {
+//                float average = 0;
+//
+//                for (int channel = 0; channel < 3; channel++)
+//                {
+//                    average += texture.GetPixel(column, row)[channel];
+//                }
+//
+//                average /= 3.0f;
+//
+//                if (average > lowOffset && average < highOffset)
+//                {
+//                    break;
+//                }
+//                else
+//                {
+//                    texture.SetPixel(column, row, new Color(0,0,0,0));
+//                }
+//            }
+//        }
+//
+//        for (int column = 0; column < texture.width; column++)
+//        {
+//            for (int row = 0; row < texture.height; row++)
+//            {
+//                float average = 0;
+//
+//                for (int channel = 0; channel < 3; channel++)
+//                {
+//                    average += texture.GetPixel(column, row)[channel];
+//                }
+//
+//                average /= 3.0f;
+//
+//                if (average > lowOffset && average < highOffset)
+//                {
+//                    break;
+//                }
+//                else
+//                {
+//                    texture.SetPixel(column, row, new Color(0,0,0,0));
+//                }
+//            }
+//        }
+//
+//        for (int column = 0; column < texture.width; column++)
+//        {
+//            for (int row = texture.height; row > 0; row--)
+//            {
+//                float average = 0;
+//
+//                for (int channel = 0; channel < 3; channel++)
+//                {
+//                    average += texture.GetPixel(column, row)[channel];
+//                }
+//
+//                average /= 3.0f;
+//
+//                if (average > lowOffset && average < highOffset)
+//                {
+//                    break;
+//                }
+//                else
+//                {
+//                    texture.SetPixel(column, row, new Color(0,0,0,0));
+//                }
+//            }
+//        }
+//
+//        return texture;
+//    }
 }

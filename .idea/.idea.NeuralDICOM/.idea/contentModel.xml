@@ -1311,15 +1311,32 @@
         </e>
         <e p="Scenes" t="Include">
           <e p="Brain" t="Include">
-            <e p="BrainType.cs" t="Include" />
+            <e p="BrainImage" t="Include">
+              <e p="BrainType.cs" t="Include" />
+            </e>
             <e p="NeuralNetwork.cs" t="Include" />
             <e p="OpenFile.cs" t="Include" />
-            <e p="Test" t="Include">
-              <e p="ImageNeuralNetwork.cs" t="Include" />
-              <e p="ImagePair.cs" t="Include" />
-            </e>
+            <e p="TextureScaler.cs" t="Include" />
           </e>
-          <e p="EncogTest.cs" t="Include" />
+          <e p="XORTest" t="Include">
+            <e p="EncogTest.cs" t="Include" />
+          </e>
+        </e>
+        <e p="StandaloneFileBrowser" t="Include">
+          <e p="IStandaloneFileBrowser.cs" t="Include" />
+          <e p="Sample" t="Include">
+            <e p="BasicSample.cs" t="Include" />
+            <e p="CanvasSampleOpenFileImage.cs" t="Include" />
+            <e p="CanvasSampleOpenFileText.cs" t="Include" />
+            <e p="CanvasSampleOpenFileTextMultiple.cs" t="Include" />
+            <e p="CanvasSampleSaveFileImage.cs" t="Include" />
+            <e p="CanvasSampleSaveFileText.cs" t="Include" />
+          </e>
+          <e p="StandaloneFileBrowser.cs" t="Include" />
+          <e p="StandaloneFileBrowserEditor.cs" t="Include" />
+          <e p="StandaloneFileBrowserLinux.cs" t="Include" />
+          <e p="StandaloneFileBrowserMac.cs" t="Include" />
+          <e p="StandaloneFileBrowserWindows.cs" t="Include" />
         </e>
         <e p="TextMesh Pro" t="Include">
           <e p="Fonts" t="Include">
